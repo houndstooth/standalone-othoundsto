@@ -1,0 +1,289 @@
+100*e^-((x-3)^2/(2*5^2))
+
+100 is the height of the peak
+- 3  offsets the peak side to side, 3 positive to the right
+
+
+{\rtf1\ansi\ansicpg1252\deff0\nouicompat\deflang1033{\fonttbl{\f0\fnil\fcharset0 Calibri;}}
+{\*\generator Riched20 6.3.9600}\viewkind4\uc1 
+\pard\sa200\sl276\slmult1\f0\fs22\lang9 use scale as vibrato! so ones further out in the gaussian, quieter, extreme high and low pitches, will vibrato proportionally more, novel effect\par
+\par
+so FOR SOME REASON\par
+the combination of rotateAboutPlayCursor and logHoundstoothLineSegments isn't working\par
+meaning that there are two things going on:\par
+\tab the visual side, drawHoundstooth\par
+\tab the audio side, logHoundstoothLineSegments\par
+and there are two rotation modes developed:\par
+\tab about origin (simpler, but not ultimately what we need)\par
+\tab about a custom point, specifically the playCursorCenter\par
+so when you're doing it Origin style, BOTH THE VISUAL AND AUDIO WORK IN SYNC\par
+but when you're doing it playCursor style, VISUAL WORKS BUT AUDIO DOESN'T!!!!\par
+what the fuck could that mean????!?!?!?!??!\par
+\par
+\par
+ABOUT PLAYCURSOR SEGMENT EXAMPLES:\par
+segment itself: 20.060894155500478,29.576931317375795,19.11212306437625,30.625660747041366\par
+\par
+segment itself: 21.087970666527838,9.623579028114705,18.990511807196413,11.521121210363503\par
+\par
+segment itself: 20.999999999999943,27.000000000000114,19.99999999999983,27.000000000000114\par
+\par
+ABOUT ORIGIN SEGMENT EXAMPLES\par
+segment itself: 20.505743807821993,24.073106797585762,19.610573059190795,25.167944379510615\par
+\par
+segment itself: 19.286390046784746,27.964891542133365,20.416149157641616,27.114218660564962\par
+}
+ 
+
+{\rtf1\ansi\ansicpg1252\deff0\nouicompat\deflang1033{\fonttbl{\f0\fnil\fcharset0 Calibri;}}
+{\*\generator Riched20 6.3.9600}\viewkind4\uc1 
+\pard\sa200\sl276\slmult1\f0\fs22\lang9 SCALE = 18;\par
+\par
+HOUNDSTOOTH_VERTICES = [\par
+  [0,3],\par
+  [2,1],\par
+  [3,1],\par
+  [4,0],\par
+  [4,1],\par
+  [5,1],\par
+  [4,2],\par
+  [4,3],\par
+  [2,5],\par
+  [2,4],\par
+  [3,3],\par
+  [2,3],\par
+  [2,2],\par
+  [1,3]\par
+]\par
+\par
+FIRST_HOUNDSTOOTH_VERTEX = HOUNDSTOOTH_VERTICES[0];\par
+\par
+WIDTH_UNITS = WIDTH / SCALE;\par
+HEIGHT_UNITS = HEIGHT / SCALE;\par
+\par
+var curCollisions = [];\par
+\par
+var worldRange = [\par
+  [4,4],\par
+  [20,20]\par
+];\par
+\par
+function drawUnrotatedHoundstooth(startPos) \{\par
+  ctx.strokeStyle="#000";\par
+  ctx.fillStyle="#000";\par
+  ctx.lineWidth = 1;\par
+\par
+  ctx.beginPath();\par
+  ctx.moveTo(\par
+    (startPos[0] + FIRST_HOUNDSTOOTH_VERTEX[0]) * SCALE,\par
+    (startPos[1] + FIRST_HOUNDSTOOTH_VERTEX[1]) * SCALE\par
+  );\par
+\par
+  HOUNDSTOOTH_VERTICES.slice(1).forEach(function(vertex) \{\par
+    ctx.lineTo(\par
+      (startPos[0] + vertex[0]) * SCALE,\par
+      (startPos[1] + vertex[1]) * SCALE\par
+    );\par
+  \});\par
+\par
+  ctx.lineTo(\par
+    (startPos[0] + FIRST_HOUNDSTOOTH_VERTEX[0]) * SCALE,\par
+    (startPos[1] + FIRST_HOUNDSTOOTH_VERTEX[1]) * SCALE\par
+  );\par
+  ctx.closePath();\par
+  ctx.fill();\par
+  ctx.stroke();\par
+\};\par
+\par
+function tileUnrotatedHoundsteeth() \{\par
+  // for (x = -4; x < WIDTH_UNITS - 16; x += 4) \{\par
+  //   for (y = -4; y < HEIGHT_UNITS - 16; y += 4 ) \{\par
+  //     drawUnrotatedHoundstooth([x, y]);\par
+  //   \}\par
+  // \}\par
+  for (x = worldRange[0][0]; x < worldRange[1][0]; x += 4) \{\par
+    for (y = worldRange[0][1]; y < worldRange[1][1]; y += 4 ) \{\par
+      drawUnrotatedHoundstooth([x, y]);\par
+    \}\par
+  \}\par
+\};\par
+\par
+tileUnrotatedHoundsteeth();\par
+drawPlayCursor();\par
+\par
+function drawHoundstooth(startPos, radians, progress) \{\par
+  this.ctx.strokeStyle="#000";\par
+  this.ctx.fillStyle="#000";\par
+  this.ctx.lineWidth = 1;\par
+\par
+  ctx.beginPath();\par
+  initial_pos = rotateAboutPlayCursor([\par
+    (startPos[0] + FIRST_HOUNDSTOOTH_VERTEX[0]) * SCALE,\par
+    (startPos[1] + FIRST_HOUNDSTOOTH_VERTEX[1]) * SCALE\par
+  ], radians);\par
+  ctx.moveTo(initial_pos[0] - progress, initial_pos[1]);\par
+\par
+  HOUNDSTOOTH_VERTICES.slice(1).forEach(function(vertex) \{\par
+    next_pos = rotateAboutPlayCursor([\par
+      (startPos[0] + vertex[0]) * SCALE,\par
+      (startPos[1] + vertex[1]) * SCALE\par
+    ], radians);\par
+    ctx.lineTo(next_pos[0] - progress, next_pos[1]);\par
+  \});\par
+\par
+  ctx.lineTo(initial_pos[0] - progress, initial_pos[1]);\par
+  ctx.closePath();\par
+  ctx.fill();\par
+  ctx.stroke();\par
+\}\par
+\par
+function logHoundstoothLineSegments(startPos, radians, progress) \{\par
+  for (i = 0; i < HOUNDSTOOTH_VERTICES.length; i++) \{\par
+    j = (i == HOUNDSTOOTH_VERTICES.length - 1) ? 0 : i + 1;\par
+\par
+    var segmentStart = rotateAboutPlayCursorUnscaled([\par
+      startPos[0] + HOUNDSTOOTH_VERTICES[i][0],\par
+      startPos[1] + HOUNDSTOOTH_VERTICES[i][1]\par
+    ], radians);\par
+\par
+    var segmentEnd = rotateAboutPlayCursorUnscaled([\par
+      startPos[0] + HOUNDSTOOTH_VERTICES[j][0],\par
+      startPos[1] + HOUNDSTOOTH_VERTICES[j][1]\par
+    ], radians);\par
+\par
+    houndstoothLineSegments.push([\par
+      [\par
+        [\par
+          startPos[0] / 4,\par
+          startPos[1] / 4\par
+        ],\par
+        i\par
+      ],\par
+      [\par
+        [\par
+          segmentStart[0] - progress / SCALE,\par
+          segmentStart[1]\par
+        ],\par
+        [\par
+          segmentEnd[0] - progress / SCALE,\par
+          segmentEnd[1]\par
+        ]\par
+      ]\par
+    ]);\par
+  \};\par
+\};\par
+\par
+function tileHoundsteeth(radians, progress) \{\par
+  houndstoothLineSegments = [];\par
+  newCollisions = [];\par
+\par
+  //start at -4 to spill off edge; each tooth tiles as a 4x4 so increment by 4\par
+  // for (x = -4; x < WIDTH_UNITS - 16; x += 4) \{\par
+  //   for (y = -4; y < HEIGHT_UNITS - 16; y += 4 ) \{\par
+  for (x = worldRange[0][0]; x < worldRange[1][0]; x += 4) \{\par
+    for (y = worldRange[0][1]; y < worldRange[1][1]; y += 4 ) \{\par
+      drawHoundstooth([x, y], radians, progress);\par
+      logHoundstoothLineSegments([x, y], radians, progress);\par
+    \}\par
+  \}\par
+\par
+  houndstoothLineSegments.forEach( function(lineSegment) \{\par
+    if (collisionPoint(playCursor, lineSegment[1])) \{\par
+      // console.log("houndstooth id: " + lineSegment[0][0]);\par
+      // console.log("houndstooth segment id: " + lineSegment[0][1]);\par
+      // console.log("segment itself: " + lineSegment[1]);\par
+      // console.log(collisionPoint(playCursor, lineSegment[1]));\par
+      newCollisions.push(lineSegment);\par
+    \}\par
+  \});\par
+\par
+  //update and append\par
+  newCollisions.forEach( function(newCollision) \{\par
+    var foundCollision = false;\par
+    for (i = 0; i < curCollisions.length; i++ ) \{\par
+      //if this lineSegment is already being watched\par
+      // console.log("curCollisions[i][0] is " + curCollisions[i][0] + " and newCollision[0] is " + newCollision[0]);\par
+      // console.log(curCollisions[i][0]);\par
+      // console.log(newCollision[0]);\par
+      if (curCollisions[i][0][0][0][0] == newCollision[0][0][0]\par
+        && curCollisions[i][0][0][0][1] == newCollision[0][0][1] //HAHAHAH FUCKING INSANE\par
+        && curCollisions[i][0][0][1] == newCollision[0][1] ) \{\par
+        //console.log("");\par
+        //console.log("   UPDATED");\par
+      //  console.log("");\par
+\par
+        curCollisions[i][0][1] = newCollision[1]; //just update the non-id, floaty coord part\par
+\par
+\par
+        // console.log(newCollision);\par
+        // console.log("freq: " + newCollision[1][1] * 1000);\par
+        yValOfCollision = collisionPoint(playCursor, newCollision[1])[1] * 200;\par
+        //console.log("yValOfCollision" + yValOfCollision);\par
+\par
+        curCollisions[i][1][0].frequency.value = 6000 - yValOfCollision;\par
+\par
+        foundCollision = true;\par
+        break;\par
+      \}\par
+    \}\par
+    if (foundCollision == false) \{ //brand new one\par
+      console.log(newCollision[0][0][0]);\par
+      console.log(newCollision[0][0][1]);\par
+      console.log(worldRange[1][0]);\par
+      console.log(worldRange[1][1]);\par
+\par
+      if (newCollision[0][0][0] * 4 == worldRange[1][0] - 4) \{ //if it's in the furthest to the right column\par
+        worldRange[1][0] += 4;\par
+      \} else if (newCollision[0][0][1] * 4 == worldRange[1][1] - 4) \{ //if it's in the furthest to the bottom row\par
+        worldRange[1][1] += 4;\par
+      \} else if (newCollision[0][0][0] * 4 == worldRange[0][0]) \{ //if its in the furthest to the left column\par
+        worldRange[0][0] -= 4;\par
+      \} else if (newCollision[0][0][1] * 4 == worldRange[0][1]) \{ // if it's in the further to the top row\par
+        worldRange[0][1] -= 4;\par
+      \}\par
+\par
+      newVoice = [\par
+        audioCtx.createOscillator(),\par
+        audioCtx.createGain()\par
+      ];\par
+\par
+      newVoice[0].connect(newVoice[1]);\par
+      newVoice[1].connect(audioCtx.destination);\par
+      newVoice[0].type = 'square';\par
+\par
+      yValOfCollision = collisionPoint(playCursor, newCollision[1])[1] * 200;\par
+      // console.log("yValOfCollision" + yValOfCollision);\par
+      newVoice[0].frequency.value = 6000 - yValOfCollision // Math.random() * 10000; // value in hertz //initialFreq\par
+\par
+      newVoice[0].detune.value = 100; // value in cents\par
+      newVoice[0].start(0);\par
+      newVoice[1].gain.value = initialVol;\par
+\par
+      //console.log("added a new one");\par
+\par
+      curCollisions.push([newCollision, newVoice]);\par
+    \}\par
+  \});\par
+\par
+  //weed out ones that went away\par
+  for (i = curCollisions.length - 1; i >= 0; i-- ) \{\par
+    var survived = false;\par
+    for (j = 0; j < newCollisions.length; j++ ) \{\par
+      if (newCollisions[j][0][1] == curCollisions[i][0][0][1]\par
+        && newCollisions[j][0][0][0] == curCollisions[i][0][0][0][0]\par
+        && newCollisions[j][0][0][1] == curCollisions[i][0][0][0][1] ) \{\par
+        survived = true;\par
+        break;\par
+      \}\par
+    \}\par
+    if (survived == false) \{\par
+      curCollisions[i][1][1].disconnect(audioCtx.destination);\par
+      curCollisions.splice(i, 1);\par
+\par
+      //console.log("deleted an oldie");\par
+    \}\par
+  \}\par
+\par
+\}\par
+}
+ 
