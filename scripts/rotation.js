@@ -8,13 +8,17 @@ function getPlayCursorCenterUnscaled() {
           (playCursor[0][1] + playCursor[1][1]) / 2];
 };
 
+function calcDist(pos1, pos2) {
+  return Math.sqrt(
+    Math.pow(pos1[0] - pos2[0], 2) +
+    Math.pow(pos1[1] - pos2[1], 2)
+  );
+};
+
 function rotateAboutPlayCursor(pos, radians) {
   var playCursorCenter = getPlayCursorCenter();
 
-  var dist = Math.sqrt(
-    Math.pow(pos[0] - playCursorCenter[0], 2) +
-    Math.pow(pos[1] - playCursorCenter[1], 2)
-  );
+  var dist = calcDist(pos, playCursorCenter);
 
   var curAngle = 0;
   if (pos[0] - playCursorCenter[0] == 0) { //avoiding dividing by zero
@@ -41,10 +45,7 @@ function rotateAboutPlayCursor(pos, radians) {
 function rotateAboutPlayCursorUnscaled(pos, radians) {
   var playCursorCenter = getPlayCursorCenterUnscaled();
 
-  var dist = Math.sqrt(
-    Math.pow(pos[0] - playCursorCenter[0], 2) +
-    Math.pow(pos[1] - playCursorCenter[1], 2)
-  );
+  var dist = calcDist(pos, playCursorCenter);
 
   var curAngle = 0;
   if (pos[0] - playCursorCenter[0] == 0) { //avoiding dividing by zero

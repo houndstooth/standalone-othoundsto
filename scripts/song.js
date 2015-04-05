@@ -5,6 +5,7 @@ var progress = [0.0, 0,0];
 var songStarted = false;
 
 var SPEED = 20;
+var VERTEX_EMPHASIS_AMOUNT = 4;
 
 TARGET_ROTATIONS = [
   -0.2449786631,
@@ -26,7 +27,7 @@ TARGET_ROTATIONS = [
 function playCursorProgresses() {
   progress[0] += Math.cos(-rotation);
   progress[1] += Math.sin(-rotation);
-}
+};
 
 function rotationProgresses() {
   if (Math.abs(rotation - TARGET_ROTATIONS[curTargetRotation]) < 0.001) {
@@ -41,13 +42,15 @@ function rotationProgresses() {
       1 - Math.cos((Math.abs(TARGET_ROTATIONS[curTargetRotation] - rotation) /
     curGapToClose) * 2 * Math.PI));
   }
-}
+};
 
 function songLoop() {
-  manualControls();
+  //manualControls();
   playCursorProgresses();
   rotationProgresses();
   tileHoundsteeth(rotation, progress);
   drawPlayCursor();
   setTimeout(songLoop, SPEED);
-}
+};
+
+songLoop();

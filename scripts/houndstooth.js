@@ -15,10 +15,27 @@ HOUNDSTOOTH_VERTICES = [ //in atomic grid units
   [1,3]
 ]
 
+HOUNDSTOOTH_LINE_SEGMENT_LENGTHS = [
+  2 * Math.sqrt(2),
+  1,
+  Math.sqrt(2),
+  1,
+  1,
+  Math.sqrt(2),
+  1,
+  2 * Math.sqrt(2),
+  1,
+  Math.sqrt(2),
+  1,
+  1,
+  Math.sqrt(2),
+  1
+]
+
 FIRST_HOUNDSTOOTH_VERTEX = HOUNDSTOOTH_VERTICES[0];
 
 MAX_Y_COLLISION = 6000; //there are probably formulas for these based on scale...
-MIN_Y_COLLISION = 2000;
+MIN_Y_COLLISION = 2000; //actually i think this * 200 bullshit w/ yValOfCollision is playing a part, whatever that was for...
 Y_RANGE = MAX_Y_COLLISION - MIN_Y_COLLISION;
 NUM_OCTAVES = 5;
 SIGMA = Y_RANGE / NUM_OCTAVES; //also approximate standard deviation
@@ -151,10 +168,26 @@ function tileHoundsteeth(radians, progress) {
   removeOutdatedCollisions();
 };
 
+function calcProximityToLineSegmentEndpoint(collisionPos, newCollision) {
+  var lineSegmentLength = HOUNDSTOOTH_LINE_SEGMENT_LENGTHS[newCollision[0][1]];
+
+  var distToClosestEndpoint = Math.min(
+    calcDist(collisionPos, newCollision[1][0]),
+    calcDist(collisionPos, newCollision[1][1])
+  )
+
+  var proximityScalar = Math.pow(1 - (distToClosestEndpoint * 2 / lineSegmentLength), VERTEX_EMPHASIS_AMOUNT);
+
+  return proximityScalar;
+};
+
 function updateCollisions() {
   newCollisions.forEach( function(newCollision) {
     var foundCollision = false;
-    var yValOfCollision = collisionPoint(playCursor, newCollision[1])[1] * 200;
+    var collisionPos = collisionPoint(playCursor, newCollision[1]);
+    var yValOfCollision = collisionPos[1] * 200;
+    var proximityToLineSegmentEndpoint = calcProximityToLineSegmentEndpoint(collisionPos, newCollision);
+
     for (i = 0; i < curCollisions.length; i++ ) {
       //if this lineSegment is already being watched
       if (curCollisions[i][0][0][0][0] == newCollision[0][0][0]
@@ -162,14 +195,22 @@ function updateCollisions() {
         && curCollisions[i][0][0][1] == newCollision[0][1] ) {
         curCollisions[i][0][1] = newCollision[1]; //just update the non-id, floaty coord part
 
-        updateVoice(curCollisions[i][1], yValOfCollision);
+        updateVoice(
+          curCollisions[i][1],
+          yValOfCollision,
+          proximityToLineSegmentEndpoint
+        );
+
         foundCollision = true;
         break;
       }
     }
     if (foundCollision == false) { //brand new one
       checkForExpandWorldRange(newCollision[0][0]);
-      var newVoice = initializeVoice(yValOfCollision);
+      var newVoice = initializeVoice(
+        yValOfCollision,
+        proximityToLineSegmentEndpoint
+      );
       curCollisions.push([newCollision, newVoice]);
     }
   });
