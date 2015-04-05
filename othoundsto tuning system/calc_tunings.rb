@@ -1,16 +1,12 @@
 # COUNTERCLOCKWISE FROM STRAIGHT OUT TO THE RIGHT
 def rotate_about_origin(pos, radians)
   dist = Math.sqrt( pos[0] ** 2 + pos[1] ** 2 )
-  # puts "dist: #{dist}"
   if pos[0] == 0
     cur_angle = pos[1] > 0 ? Math::PI / 2 : - Math::PI / 2
-    # puts "cur_angle A: #{cur_angle}"
   else
     cur_angle = Math.atan(pos[1].fdiv(pos[0]))
-    # puts "cur_angle B: #{cur_angle}"
   end
   new_angle = cur_angle + radians
-#  puts "new_angle: #{new_angle}"
 
   [ dist * Math.cos(new_angle) , dist * Math.sin(new_angle) ]
 end
@@ -42,7 +38,6 @@ end
 
 def tuning_of_houndstooth(houndstooth)
   pitches = houndstooth.map { |vertex| vertex[1] }
-#  puts pitches
   pitches.map { |pitch| ((pitch - pitches.min) % 4 * 300).round(3) }.uniq.sort
 end
 
